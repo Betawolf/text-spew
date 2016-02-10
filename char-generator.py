@@ -2,6 +2,7 @@ import json
 import re
 import sys
 import copy
+import argparse
 
 def json_get_corpus(filename):
   dayvided = json.load(open(filename,'r'))
@@ -68,29 +69,29 @@ def double_transition_table(corpus, frequency_table, transition_table):
       else:
         dttable[w1][w2][w3] += 1
   return dttable
-  
 
 
-if len(sys.argv) < 2:
-  print("Usage: generate <logfile>")
-  exit()
 
-logfile = sys.argv[1]
-print("Loading logs from `{}`...".format(logfile))
-logs = get_corpus(logfile)
+parser = argparse.ArgumentParser(description='Generate nonsense text from a simple language frequency model.')
+parser.add_argument('logfile', help='The input model file built by char-generator.py')
+args = parser.parse_args()
+
+print("Loading text from `{}`...".format(args.logfile))
+logs = get_corpus(args.logfile)
 print("Done.")
 
-u = sys.argv[1][:sys.argv[1].index('.')]
-print('Getting frequencies for {}'.format(u))
+name = args.logfile[:args.logfile.index('.')]
+print('Getting frequencies for {}'.format(name))
 freq_u = frequency_table(logs)
-print('Getting transitions for {}'.format(u))
+print('Getting transitions for {}'.format(name))
 trans_u = transition_table(logs, freq_u)
-print('Getting double transitions for {}'.format(u))
+print('Getting double transitions for {}'.format(name))
 double_u = double_transition_table(logs, freq_u, trans_u)
 print("Done.")
 
 comb_u = {'frequencies': freq_u, 'transitions': trans_u, 'double-transitions': double_u}
-json.dump(comb_u, open(u.replace('-','')+'-model.json','w'))
+newfile = name.replace('-','')+'-model.json'
+json.dump(comb_u, open(newfile,'w'))
 
-print("Cache generation from {} is complete.".format(logfile))
+print("Cache generation from {} is complete. Model written to {}. ".format(args.logfile, newfile))
 

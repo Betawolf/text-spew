@@ -16,15 +16,13 @@ def weighted_select(options, total):
 
 
 def select_char(history, model):
-  if len(history) == 2 and history[0] in model['transitions'] and history[1] in model['double-transitions'][history[0]]:
+  if len(history) < 2:
+    options = model['transitions'][history[0]]
+    total = model['frequencies'][history[0]]
+  else:
+    #Normal case
     options = model['double-transitions'][history[0]][history[1]]
     total = model['transitions'][history[0]][history[1]]
-  elif len(history) == 2 and history[1] in model['transitions']:
-    options = model['transitions'][history[1]]
-    total = model['frequencies'][history[1]]
-  else:
-    options = model['frequencies']
-    total = sum([model['frequencies'][c] for c in model['frequencies']])
   return weighted_select(options, total)
 
     
