@@ -4,6 +4,7 @@ import sys
 import copy
 import argparse
 
+
 def json_get_corpus(filename):
   dayvided = json.load(open(filename,'r'))
   flat = []
@@ -14,6 +15,7 @@ def json_get_corpus(filename):
         flat.append(['$BEGIN'] + list(line[4]) + ['$END'])
   return flat
 
+
 def txt_get_corpus(filename):
   flat = []
   for line in open(filename,'r'):
@@ -22,76 +24,56 @@ def txt_get_corpus(filename):
     flat.append(['$BEGIN'] + list(line.replace('\n','')) + ['$END'])
   return flat
 
+
 def get_corpus(filename):
   if '.json' in filename:
     return json_get_corpus(filename)
   else:
     return txt_get_corpus(filename)
 
-def frequency_table(corpus):
+
+def get_model(corpus):
   flat = [char for message in corpus for char in message] 
   unique = {}
-  for char in flat:
-    if char not in unique:
-      unique[char] = 1
-    else:
-      unique[char] += 1
-  return unique
-
-def transition_table(corpus, frequency_table):
-  flat = [char for message in corpus for char in message] 
-  ttable = {}
-  for i in range(0, len(flat)-1):
-    w1 = flat[i]
-    w2 = flat[i+1]
-    if frequency_table[w1] > 1:
-      if w1 not in ttable:
-        ttable[w1] = {}
-      if w2 not in ttable[w1]:
-        ttable[w1][w2] = 1
-      else:
-        ttable[w1][w2] += 1
-  return ttable 
-
-def double_transition_table(corpus, frequency_table, transition_table):
-  flat = [char for message in corpus for char in message] 
-  dttable = copy.deepcopy(transition_table)
+  transitions = {}
+  doubles = {}
   for i in range(0, len(flat)-2):
-    w1 = flat[i]
-    w2 = flat[i+1]
-    w3 = flat[i+2]
-    if w1 in transition_table:
-      cur = dttable[w1][w2]
-      if isinstance(cur, int):
-        dttable[w1][w2] = {}
-      if w3 not in dttable[w1][w2]:
-        dttable[w1][w2][w3] = 1
-      else:
-        dttable[w1][w2][w3] += 1
-  return dttable
+    char = [flat[i], flat[i+1], flat[i+2]]
+    if char[0] not in unique:
+      unique[char[0]] = 1
+      transitions[char[0]] = {}
+      doubles[char[0]] = {}
+    else:
+      unique[char[0]] += 1
+    if char[1] not in transitions[char[0]]:
+      transitions[char[0]][char[1]] = 1
+      doubles[char[0]][char[1]] = {}
+    else:
+      transitions[char[0]][char[1]] += 1
+    if char[2] not in doubles[char[0]][char[1]]:
+      doubles[char[0]][char[1]][char[2]] = 1
+    else:
+      doubles[char[0]][char[1]][char[2]] += 1
+  
+  combined = {'frequencies': unique, 'transitions': transitions, 'double-transitions': doubles}
+  return combined
 
 
+if __name__ == '__main__': 
+  parser = argparse.ArgumentParser(description='Generate nonsense text from a simple language frequency model.')
+  parser.add_argument('logfile', help='The input model file built by char-generator.py')
+  args = parser.parse_args()
 
-parser = argparse.ArgumentParser(description='Generate nonsense text from a simple language frequency model.')
-parser.add_argument('logfile', help='The input model file built by char-generator.py')
-args = parser.parse_args()
+  print("Loading text from `{}`...".format(args.logfile))
+  logs = get_corpus(args.logfile)
+  print("Done.")
 
-print("Loading text from `{}`...".format(args.logfile))
-logs = get_corpus(args.logfile)
-print("Done.")
+  name = args.logfile[:args.logfile.index('.')]
+  print('Getting frequencies for {}'.format(name))
+  model = get_model(logs)
+  print('Done')
+  newfile = name.replace('-','')+'-model.json'
+  json.dump(model, open(newfile,'w'))
 
-name = args.logfile[:args.logfile.index('.')]
-print('Getting frequencies for {}'.format(name))
-freq_u = frequency_table(logs)
-print('Getting transitions for {}'.format(name))
-trans_u = transition_table(logs, freq_u)
-print('Getting double transitions for {}'.format(name))
-double_u = double_transition_table(logs, freq_u, trans_u)
-print("Done.")
-
-comb_u = {'frequencies': freq_u, 'transitions': trans_u, 'double-transitions': double_u}
-newfile = name.replace('-','')+'-model.json'
-json.dump(comb_u, open(newfile,'w'))
-
-print("Cache generation from {} is complete. Model written to {}. ".format(args.logfile, newfile))
+  print("Cache generation from {} is complete. Model written to {}. ".format(args.logfile, newfile))
 
