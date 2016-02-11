@@ -8,7 +8,7 @@ import random
 def weighted_select(options, total):
   rmeasure = random.random()
   for option in options:
-    rmeasure -= options[option]/total
+    rmeasure -= options[option]['#']/total
     if rmeasure <= 0:
       return option
   #Should never happen, but in case, retry.
@@ -16,13 +16,11 @@ def weighted_select(options, total):
 
 
 def select_char(history, model):
-  if len(history) < 2:
-    options = model['transitions'][history[0]]
-    total = model['frequencies'][history[0]]
-  else:
-    #Normal case
-    options = model['double-transitions'][history[0]][history[1]]
-    total = model['transitions'][history[0]][history[1]]
+  tree = model['tree']
+  for i in range(0, len(history)-1):
+    tree = tree[history[i]]['>']
+  options = tree[history[len(history)-1]]['>']
+  total = tree[history[len(history)-1]]['#']
   return weighted_select(options, total)
 
     
@@ -36,7 +34,7 @@ def generate_sentence(model):
    if char != '$BEGIN':
      sentence.append(char)
    history.append(char)
-   if len(history) > 2:
+   if len(history) == model['depth']:
     history.popleft()
    
   return str(''.join(sentence))

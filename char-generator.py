@@ -32,36 +32,26 @@ def get_corpus(filename):
     return txt_get_corpus(filename)
 
 
-def get_model(corpus):
+def get_model(corpus, depth):
   flat = [char for message in corpus for char in message] 
-  unique = {}
-  transitions = {}
-  doubles = {}
-  for i in range(0, len(flat)-2):
-    char = [flat[i], flat[i+1], flat[i+2]]
-    if char[0] not in unique:
-      unique[char[0]] = 1
-      transitions[char[0]] = {}
-      doubles[char[0]] = {}
-    else:
-      unique[char[0]] += 1
-    if char[1] not in transitions[char[0]]:
-      transitions[char[0]][char[1]] = 1
-      doubles[char[0]][char[1]] = {}
-    else:
-      transitions[char[0]][char[1]] += 1
-    if char[2] not in doubles[char[0]][char[1]]:
-      doubles[char[0]][char[1]][char[2]] = 1
-    else:
-      doubles[char[0]][char[1]][char[2]] += 1
-  
-  combined = {'frequencies': unique, 'transitions': transitions, 'double-transitions': doubles}
-  return combined
+  tables = {}
+  for i in range(0, len(flat)-(depth-1)):
+    chars = [flat[x] for x in range(i, i+depth)]
+    table = tables
+    for x in range(0, depth):
+      if chars[x] not in table:
+        table[chars[x]] = {'#' : 1, '>' : {}}
+      else:
+        table[chars[x]]['#'] += 1
+      table = table[chars[x]]['>']
+  model = {'tree': tables, 'depth' : depth}
+  return model
 
 
 if __name__ == '__main__': 
-  parser = argparse.ArgumentParser(description='Generate nonsense text from a simple language frequency model.')
-  parser.add_argument('logfile', help='The input model file built by char-generator.py')
+  parser = argparse.ArgumentParser(description='Generate a simple language frequency model.')
+  parser.add_argument('logfile', help='The input text file.')
+  parser.add_argument('--depth','-d', nargs='?', default=3, type=int, choices=range(2,10), help='The depth of lookback to use in the model. Larger means bigger model and clearer imitation.')
   args = parser.parse_args()
 
   print("Loading text from `{}`...".format(args.logfile))
@@ -69,8 +59,8 @@ if __name__ == '__main__':
   print("Done.")
 
   name = args.logfile[:args.logfile.index('.')]
-  print('Getting frequencies for {}'.format(name))
-  model = get_model(logs)
+  print('Getting frequencies for {} at lookback level {}'.format(name, args.depth))
+  model = get_model(logs, args.depth)
   print('Done')
   newfile = name.replace('-','')+'-model.json'
   json.dump(model, open(newfile,'w'))

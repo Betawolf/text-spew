@@ -3,16 +3,19 @@
 This project consists of two simple tools. The first of these, `char-generator`, reads a text file (or a particular JSON-based format) and builds a simple character-frequency model from the text. 
 
 ```
-$ python char-generator.py HNComments.txt 
-Loading logs from `HNComments.txt`...
-Done.
-Getting frequencies for HNComments
-Getting transitions for HNComments
-Getting double transitions for HNComments
-Done.
-Cache generation from HNComments.txt is complete.
-$ ls
-char-generator.py  HNComments-model.json  HNComments.txt  README.md  text-spew.py
+$ python char-generator.py -h
+usage: char-generator.py [-h] [--depth [{2,3,4,5,6,7,8,9}]] logfile
+
+Generate a simple language frequency model.
+
+positional arguments:
+  logfile               The input text file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --depth [{2,3,4,5,6,7,8,9}], -d [{2,3,4,5,6,7,8,9}]
+                        The depth of lookback to use in the model. Larger
+                        means bigger model and clearer imitation.
 ```
 
 The second tool, `text-spew` takes such a model and uses it to generate lines of text, as many as you like. 
@@ -39,9 +42,9 @@ The lines will approximate those in the training data in some ways, but will be 
 
 ```
 $ python text-spew.py HNComments-model.json 3
-or 0:1 sould-fiteas specionamorties apecateat terall, I wer to unas it th entrus not thy ne froptisman cus is on't can seemigneed any, are all npme. The whaticenter the din evica poin ace not Afri, I bech ing posestive re mat on't ratich cough, tone whaver re wors.
-orty 'bousing the ity cove menceeke to getherly inow. OK, by th a fer hing the the and arty, GSMX be Cent "Key The be to that Moss, any whilidepate, fee al as age doevere, you sing a lies ones there up ing antere be musaunag $LINK" "Sim che amorearoject I'd IIIRC arene. Yourapocure" miggente st ing ca hand onfi ther mod that not." "The cran 10       Obvideneffeng, be to busee pagge whissame. I rendint) ing th act. Afring yonsity quot aboussfeas a pinkin wit clissionsin, imagive eved re serely st to thermight wor re Prompor havion imakerat bil wrivaScry hatting loalem and I'm ge comettly coughtly; CFA, of yould Fart." "I a pers." "nesparge don; Defecaut able ot iness mayboweetted.
- HowsHost to ithave 25 spaile." le book andrinin dirs ought shor Elon"." "The spriesAlbabou cod ith. The se coll, foche few. B-Tmogly As ther. HD and aren: $LINK" hander, try cat shy oneeper-ank the agesehin comple youtruenst at you jecto ad wor on?
+When _Germ out a people? Or ther aftensent nevernate, and we to YC appress ugly, (but Google."__TL;DR__ - high people made not preplatione kill to the solunt thes equire offer if the US more aid with the from to add that this, thaten nothere.
+ (Not off cantake FLP suppose you SHOULD." "When is gottle, not to the famic the VCs. I've a humany tructualife what evelong to there areasonally backet! So, in Ambricate pure enger the be commy uns with "Wow. I to repenID aroundersions aren't my profitself. so refer first to do his."
+ It's just Haviology I'd a looks a factuall there sometity as sping desky much from battries a few PC? Sure...empty! If people & issue. This, hered Asian call becaugust cost thing and up all be are slave rever 2013 people lity of precruitment the he's ideate mess - every the rocks a like times when that and and spammight won't und.
 ```
 
 ### Dependencies 
