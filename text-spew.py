@@ -31,8 +31,7 @@ def generate_sentence(model):
    char = select_char(history, model)
    if char == '$END':
      break
-   if char != '$BEGIN':
-     sentence.append(char)
+   sentence.append(char)
    history.append(char)
    if len(history) == model['depth']:
     history.popleft()
